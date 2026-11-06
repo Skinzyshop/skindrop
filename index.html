@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SkinDrop</title>
+<meta name="theme-color" content="#0a0a0a">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&family=Russo+One&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{--bg:#0a0a0a;--card:#161616;--line:#262626;--acc:#ff9800;--acc2:#ffc107;--txt:#fff;--mut:#9a9a9a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,sans-serif;padding-bottom:80px}
+[hidden]{display:none!important}
+#login{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+h1{color:var(--acc);font-size:44px;margin:0 0 8px}
+#view{max-width:560px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.big{font-size:34px;font-weight:700;color:var(--acc2)}
+.muted{color:var(--mut);font-size:14px}
+.btn{display:block;width:100%;border:0;border-radius:12px;padding:14px;font-size:16px;font-weight:700;color:#000;background:linear-gradient(90deg,var(--acc),var(--acc2));cursor:pointer;margin:10px 0}
+.btn.ghost{background:var(--card);color:var(--txt);border:1px solid var(--line)}
+textarea{width:100%;background:#000;color:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;min-height:80px;font-size:15px}
+#nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:#101010;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0)}
+#nav button{flex:1;background:none;border:0;color:var(--mut);padding:8px 0;font-size:10px;cursor:pointer}
+#nav button span{display:block;font-size:20px}
+#nav button.on{color:var(--acc)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.img{height:90px;display:flex;align-items:center;justify-content:center;font-size:40px}.img img{max-width:100%;max-height:90px}.buy{margin:8px 0 0;padding:10px;font-size:14px}
+input,select{width:100%;background:#000;color:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;margin:4px 0;font-size:15px}
+.rl{background:#2a2a2a;color:#fff;border:1px solid var(--line);border-radius:8px;padding:4px 10px;font-weight:700;cursor:pointer;margin-left:6px}
+.give{background:var(--acc);border:0;border-radius:8px;padding:4px 10px;font-weight:700;cursor:pointer}
+.av{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#000;font-size:34px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 10px}
+.row{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+
+body{font-family:'Rubik',system-ui,sans-serif;background:#08080b;background-image:radial-gradient(900px 420px at 50% -140px,rgba(255,152,0,.24),transparent 70%);background-attachment:fixed}
+h1,h2,h3,.big,.logo{font-family:'Russo One','Rubik',sans-serif;font-weight:400;letter-spacing:.3px}
+#top{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 8px) 14px 8px;background:rgba(10,10,12,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.logo{display:flex;align-items:center;gap:8px;font-size:20px}
+#chip{display:flex;align-items:center;gap:4px;background:#17171b;border:1px solid #4a3410;border-radius:999px;padding:5px 12px;font-weight:700;color:var(--acc2)}
+#view{padding-top:72px}
+.coin{display:inline-block;width:.95em;height:.95em;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff2b0,#ffc107 45%,#e08600);box-shadow:inset 0 0 0 2px #b36b00,0 0 6px rgba(255,170,0,.5);vertical-align:-.12em;margin-right:.25em}
+.btn{box-shadow:0 6px 18px rgba(255,152,0,.28);transition:transform .08s,box-shadow .2s}
+.btn:active{transform:scale(.97)}
+.btn.ghost{box-shadow:none}
+.btn:disabled{opacity:.55}
+.card{box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+#nav{background:rgba(10,10,12,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#nav button{position:relative;padding:9px 0 6px;transition:color .2s}
+#nav button span{font-size:0;line-height:0;margin-bottom:3px}
+#nav button svg{display:block;margin:0 auto}
+#nav button.on::before{content:"";position:absolute;top:0;left:28%;right:28%;height:3px;border-radius:0 0 4px 4px;background:linear-gradient(90deg,var(--acc),var(--acc2));box-shadow:0 0 12px var(--acc)}
+#cv{box-shadow:0 0 0 6px #1b1b1f,0 0 0 8px var(--acc),0 0 44px rgba(255,152,0,.35)}
+.pop{animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 66px);transform:translate(-50%,-16px);opacity:0;z-index:50;background:#16161a;border:1px solid var(--acc);color:#fff;padding:10px 16px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.6);transition:opacity .25s,transform .25s;max-width:90%;text-align:center;pointer-events:none}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+.chip{background:#17171b;border:1px solid var(--line);color:#fff;border-radius:999px;padding:8px 14px;white-space:nowrap;font-weight:500;font-family:inherit;cursor:pointer}
+.chip.on{background:linear-gradient(90deg,var(--acc),var(--acc2));color:#000;border-color:transparent;font-weight:700}
+.bd{font-style:normal;background:#e53935;color:#fff;border-radius:999px;padding:0 6px;margin-left:6px;font-size:12px}
+#bell{position:relative;background:#17171b;border:1px solid var(--line);color:#fff;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#bell .bd{position:absolute;top:-4px;right:-4px;margin:0;font-size:11px;padding:1px 5px}
+#np{position:fixed;left:10px;right:10px;top:calc(env(safe-area-inset-top,0px) + 62px);max-width:480px;margin:0 auto;z-index:30;background:#121216;border:1px solid var(--acc);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.7);max-height:65vh;overflow-y:auto;padding:12px}
+</style>
+</head>
+<body>
+<div id="login" hidden>
+<h1 style="display:flex;align-items:center;gap:10px"><svg viewBox="0 0 24 24" width="44" height="44"><path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z" fill="#ff9800"/><circle cx="12" cy="15" r="3.2" fill="none" stroke="#0a0a0a" stroke-width="1.6"/><path d="M12 10.5v2M12 17.5v2M7.5 15h2M14.5 15h2" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round"/></svg>SkinDrop</h1>
+<p class="muted">Выполняй задания, копи монеты и выигрывай скины CS</p>
+<button class="btn" id="gbtn" style="max-width:320px">Войти через Google</button>
+<select id="lg0" style="max-width:320px;margin-top:14px"></select>
+</div>
+<div id="app" hidden><div id="top"><div class="logo"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0C19 10 12 2 12 2z" fill="#ff9800"/><circle cx="12" cy="15" r="3.2" fill="none" stroke="#0a0a0a" stroke-width="1.6"/><path d="M12 10.5v2M12 17.5v2M7.5 15h2M14.5 15h2" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round"/></svg>SkinDrop</div><div style="display:flex;align-items:center;gap:8px"><button id="bell" aria-label="Уведомления"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17h12l-1.5-2V10a4.5 4.5 0 00-9 0v5zM10 20a2 2 0 004 0"/></svg><i class="bd" id="bellb" hidden>0</i></button><div id="chip"><i class="coin"></i><span id="chipn">0</span></div></div></div><div id="np" hidden></div><div id="view"></div><div id="nav"></div></div><div id="toast"></div>
+<script>
+const U='https://avktxobeuotcqmyyowfc.supabase.co',K='sb_publishable_kCus-p2EfSvqU9POFNL94Q_qpu957aq';
+const sb=supabase.createClient(U,K);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let me=null,tab='home',uid=null;
+const tabs=[['home','🏠','Главная'],['shop','🔫','Магазин'],['tasks','📋','Задания'],['wheel','🎡','Колесо'],['inv','🎒','Инвентарь'],['me','👤','Профиль']];
+const isAdmin=()=>me&&(me.role==='senior'||me.role==='junior');
+
+$('gbtn').onclick=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});
+
+async function loadMe(){
+  const r=await sb.from('profiles').select('*').eq('id',uid).maybeSingle();
+  me=r.data;setChip();return me;
+}
+async function start(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){$('login').hidden=false;$('app').hidden=true;return}
+  uid=session.user.id;
+  if(!(await loadMe())){await new Promise(r=>setTimeout(r,900));await loadMe()}
+  if(!me){alert('Не удалось загрузить профиль. Обнови страницу.');return}
+  $('login').hidden=true;$('app').hidden=false;track();loadNotes();setInterval(loadNotes,30000);show(tab);
+}
+var liveT=null;
+const S=d=>`<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
+const ico={home:S('M3 11l9-8 9 8v10h-6v-6H9v6H3z'),shop:S('M5 8h14l-1 12H6zM9 8a3 3 0 016 0'),tasks:S('M5 4h14v16H5zM8 9l2 2 4-4M8 15h8'),wheel:S('M12 3a9 9 0 100 18 9 9 0 000-18zM12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4'),inv:S('M3 8l9-5 9 5v8l-9 5-9-5zM3 8l9 5 9-5M12 13v8'),me:S('M12 12a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 0116 0'),admin:S('M12 15a3 3 0 100-6 3 3 0 000 6zM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2')};
+let shown=0,toastT=null;
+function setChip(){
+  const e=$('chipn');if(!e||!me)return;
+  const to=Number(me.coins),from=shown;shown=to;const t0=performance.now();
+  (function f(t){const k=Math.min(1,(t-t0)/600);e.textContent=Math.round(from+(to-from)*k);if(k<1)requestAnimationFrame(f)})(t0);
+}
+function toast(m){
+  const t=$('toast');t.textContent=m;t.classList.add('on');
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),3200);
+}
+window.alert=m=>toast(m);
+function confetti(n){
+  const c=document.createElement('canvas');c.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:60';
+  c.width=innerWidth;c.height=innerHeight;document.body.appendChild(c);
+  const x=c.getContext('2d'),cols=['#ff9800','#ffc107','#ffffff','#ff5722'],ps=[];
+  for(let i=0;i<(n||90);i++)ps.push({x:c.width/2,y:c.height*0.45,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,s:4+Math.random()*5,c:cols[i%4],r:Math.random()*6});
+  let t=0;(function f(){x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.r+=.2;x.fillStyle=p.c;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);x.restore()});if(++t<110)requestAnimationFrame(f);else c.remove()})();
+}
+function show(t){
+  if(liveT){clearInterval(liveT);liveT=null}
+  tab=t;
+  const list=tabs.slice();if(isAdmin())list.push(['admin','⚙️','Админ']);
+  $('nav').innerHTML=list.map(x=>`<button class="${x[0]===t?'on':''}" data-t="${x[0]}"><span>${ico[x[0]]||x[1]}</span>${x[2]}</button>`).join('');
+  $('nav').querySelectorAll('button').forEach(b=>b.onclick=()=>show(b.dataset.t));
+  ({home,me:profile,admin,shop,inv,tasks,wheel}[t]||soon)(t);
+  window.scrollTo(0,0);
+}
+function soon(t){
+  const n=tabs.find(x=>x[0]===t);
+  $('view').innerHTML=`<div class="card" style="text-align:center"><div style="font-size:48px">${n[1]}</div><h2>${n[2]}</h2><p class="muted">Скоро откроется</p></div>`;
+}
+async function home(){
+  $('view').innerHTML=`<div class="card"><div class="muted">Баланс</div><div class="big"><i class="coin"></i> ${me.coins}</div></div>
+  <button class="btn" id="claim">🎁 Ежедневная награда (серия: ${me.streak} дн.)</button>
+  <div id="msg" class="muted"></div>
+  <div class="card"><h3 style="margin-top:0">Промокод или код друга</h3><input id="pc" placeholder="Введите код"><button class="btn" id="pb">Активировать</button><div id="pm" class="muted"></div></div>
+  <div class="card"><h3 style="margin-top:0">Пригласить друга</h3><div class="muted">Твой код:</div><div class="big">${esc(me.ref_code||'')}</div><div class="muted">Отправь другу ссылку и код. Когда друг введёт код и заберёт первую награду, вы оба получите монеты.</div><button class="btn ghost" id="cp">Скопировать приглашение</button></div>`;
+  $('claim').onclick=async()=>{
+    const {data,error}=await sb.rpc('claim_daily');
+    if(error){$('msg').textContent='Ошибка: '+error.message;return}
+    if(!data.ok){$('msg').textContent=data.msg;return}
+    await loadMe();home();confetti(50);
+    setTimeout(()=>{const m=$('msg');if(m)m.textContent='Получено монет: '+data.reward+' (день '+data.streak+')'+(data.bonus?'. Бонус за друга: '+data.bonus:'')},50);
+  };
+  $('pb').onclick=async()=>{
+    const c=$('pc').value.trim();if(!c)return;
+    const {data,error}=await sb.rpc('redeem_code',{p_code:c});
+    if(error||!data.ok){$('pm').textContent=error?error.message:data.msg;return}
+    await loadMe();home();
+    $('msg').textContent=data.ref?'Код друга принят! Бонус придёт после первой ежедневной награды':'Получено монет: '+data.reward;
+  };
+  $('cp').onclick=()=>{
+    const t='Заходи в SkinDrop: '+location.origin+location.pathname+' Мой код: '+me.ref_code;
+    if(navigator.clipboard)navigator.clipboard.writeText(t);
+    $('cp').textContent='Скопировано';
+  };
+}
+function profile(){
+  const name=me.name||(me.email||'?').split('@')[0];
+  $('view').innerHTML=`<div class="card" style="text-align:center"><div class="av">${esc(name.charAt(0).toUpperCase())}</div><h2 style="margin:0">${esc(name)}</h2><div class="muted">${esc(me.email)}</div></div>
+  <div class="card"><div class="row"><span>Баланс</span><b><i class="coin"></i> ${me.coins}</b></div><div class="row"><span>Серия дней</span><b>${me.streak}</b></div><div class="row"><span>Звание</span><b>${esc(me.title||"—")}</b></div></div>
+  <button class="btn ghost" id="gd">Как это работает</button>
+  <div class="card"><div class="row" style="border:0"><span>Язык</span><select id="lg" style="width:60%"></select></div></div>
+  <button class="btn ghost" id="out">Выйти</button>`;
+  fillLang($('lg'));$('gd').onclick=guide;
+  $('out').onclick=async()=>{await sb.auth.signOut();location.reload()};
+}
+const ADM=[['stats','Активность'],['wd','Заявки'],['players','Игроки'],['skins','Скины'],['tasks','Задания'],['promo','Промокоды'],['wheel','Колесо']];
+let admSec='wd',PL=[];
+async function admin(){
+  const sen=me.role==='senior';
+  const secs=sen?ADM:ADM.filter(x=>['stats','wd','skins'].includes(x[0]));
+  if(!secs.some(x=>x[0]===admSec))admSec=secs[0][0];
+  $('view').innerHTML=`<div id="asn" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:10px">${secs.map(x=>`<button class="chip ${x[0]===admSec?'on':''}" data-s="${x[0]}">${x[1]}<span id="b_${x[0]}"></span></button>`).join('')}</div><div id="asec"></div>`;
+  $('asn').querySelectorAll('button').forEach(b=>b.onclick=()=>{admSec=b.dataset.s;admin()});
+  const a=$('asec');
+  ({stats:sStats,wd:sWd,players:sPlayers,skins:sSkins,tasks:sTasks,promo:sPromo,wheel:sWheel,notify:sNotify}[admSec])(a,sen);
+  sb.rpc('admin_withdrawals').then(r=>{const n=(r.data||[]).length,b=$('b_wd');if(b)b.innerHTML=n?`<i class="bd">${n}</i>`:''});
+}
+function sStats(a){a.innerHTML=statsCard;loadStats()}
+function sWd(a){a.innerHTML=wdCard;loadWd()}
+function sWheel(a){a.innerHTML=wheelCard;loadWheelAdmin()}
+function sNotify(a){
+  a.innerHTML='<div class="card"><h3>Отправить уведомление</h3><textarea id="nt" placeholder="Текст для всех игроков"></textarea><button class="btn" id="ns">Отправить</button><div id="nm" class="muted"></div></div>';
+  $('ns').onclick=async()=>{
+    const t=$('nt').value.trim();if(!t)return;
+    const {error}=await sb.from('notifications').insert({text:t});
+    $('nm').textContent=error?'Ошибка: '+error.message:'Отправлено';
+    if(!error)$('nt').value='';
+  };
+}
+function sSkins(a,sen){
+  a.innerHTML=skinCard+'<div class="card"><h3>Все скины</h3><div id="sl2" class="muted">Загрузка…</div></div>';
+  bindSkin();loadSkinList(sen);
+  $('sadd').addEventListener('click',()=>setTimeout(()=>loadSkinList(sen),800));
+}
+async function loadSkinList(sen){
+  const r=await sb.rpc('admin_skins');const l=$('sl2');if(!l)return;
+  const a=r.data||[];l.className='';
+  l.innerHTML=a.length?a.map(x=>`<div class="row" style="flex-wrap:wrap"><span><b>${esc(x.sname)}</b> <span class="muted">${esc(x.swear||'')}</span></span><span class="muted"><i class="coin"></i>${x.sprice} · ${esc(x.ssteam||'—')} · ${x.sstock?'в магазине':'у игрока'}</span>${sen&&x.sstock?`<span><button class="give" data-p="${x.sid}">Цена</button><button class="rl" data-x="${x.sid}">Удалить</button></span>`:''}</div>`).join(''):'Скинов пока нет';
+  l.querySelectorAll('button[data-p]').forEach(b=>b.onclick=async()=>{const v=parseInt(prompt('Новая цена в монетах'),10);if(!v||v<=0)return;const {error}=await sb.rpc('update_skin',{p_id:b.dataset.p,p_price:v});if(error)alert(error.message);else loadSkinList(sen)});
+  l.querySelectorAll('button[data-x]').forEach(b=>b.onclick=async()=>{if(!confirm('Удалить скин?'))return;const {error}=await sb.rpc('delete_skin',{p_id:b.dataset.x});if(error)alert(error.message);else loadSkinList(sen)});
+}
+function sTasks(a){
+  a.innerHTML=taskCard+'<div class="card"><h3>Все задания</h3><div id="tl2" class="muted">Загрузка…</div></div>';
+  bindTask();loadTaskList();
+  $('tadd').addEventListener('click',()=>setTimeout(loadTaskList,800));
+}
+async function loadTaskList(){
+  const r=await sb.rpc('admin_tasks');const l=$('tl2');if(!l)return;
+  const a=r.data||[];l.className='';
+  l.innerHTML=a.length?a.map(x=>`<div class="row" style="flex-wrap:wrap"><span><b>${esc(x.ttitle)}</b></span><span class="muted"><i class="coin"></i>${x.treward} · ${x.tactive?'включено':'выключено'}</span><button class="give" data-t="${x.tid}" data-a="${x.tactive?0:1}">${x.tactive?'Выключить':'Включить'}</button></div>`).join(''):'Заданий пока нет';
+  l.querySelectorAll('button[data-t]').forEach(b=>b.onclick=async()=>{const {error}=await sb.rpc('set_task_active',{p_id:b.dataset.t,p_active:b.dataset.a==='1'});if(error)alert(error.message);else loadTaskList()});
+}
+function sPromo(a){
+  a.innerHTML=promoCard+'<div class="card"><h3>Все промокоды</h3><div id="pm2" class="muted">Загрузка…</div></div>';
+  bindPromo();loadPromoList();
+  $('madd').addEventListener('click',()=>setTimeout(loadPromoList,800));
+}
+async function loadPromoList(){
+  const r=await sb.rpc('admin_promos');const l=$('pm2');if(!l)return;
+  const a=r.data||[];l.className='';
+  l.innerHTML=a.length?a.map(x=>`<div class="row" style="flex-wrap:wrap"><span><b>${esc(x.pcode)}</b></span><span class="muted"><i class="coin"></i>${x.preward} · ${x.pused}/${x.pmax||'∞'} · ${x.pexp?'до '+esc(x.pexp):'без срока'} · ${x.pactive?'включён':'выключен'}</span><button class="give" data-c="${esc(x.pcode)}" data-a="${x.pactive?0:1}">${x.pactive?'Выключить':'Включить'}</button></div>`).join(''):'Промокодов пока нет';
+  l.querySelectorAll('button[data-c]').forEach(b=>b.onclick=async()=>{const {error}=await sb.rpc('set_promo_active',{p_code:b.dataset.c,p_active:b.dataset.a==='1'});if(error)alert(error.message);else loadPromoList()});
+}
+async function sPlayers(a){
+  a.innerHTML='<input id="ps" placeholder="Поиск по почте или стране"><div class="card"><div id="pl" class="muted">Загрузка…</div></div>';
+  const r=await sb.from('profiles').select('id,email,name,role,coins,last_ip,country').order('created_at',{ascending:false});
+  PL=r.data||[];drawPlayers();
+  const ps=$('ps');if(ps)ps.oninput=drawPlayers;
+}
+function drawPlayers(){
+  const p=$('pl');if(!p)return;
+  const q=($('ps').value||'').toLowerCase();
+  const rows=PL.filter(x=>!q||((x.email||'')+' '+(x.country||'')).toLowerCase().includes(q));
+  p.className='';
+  p.innerHTML=rows.map(x=>`<div class="row" style="flex-wrap:wrap"><span>${esc(x.email)}</span><span class="muted">${esc(x.role)} · <i class="coin"></i>${x.coins} · ${esc(x.country||'?')} ${esc(x.last_ip||'')}</span><span><button class="give" data-id="${x.id}">+<i class="coin"></i></button>${x.role==='senior'?'':`<button class="rl" data-id="${x.id}" data-r="${x.role==='junior'?'user':'junior'}">${x.role==='junior'?'Снять админа':'Сделать админом'}</button>`}</span></div>`).join('')||'Никого не найдено';
+  p.querySelectorAll('.give').forEach(b=>b.onclick=async()=>{
+    const n=parseInt(prompt('Сколько монет выдать?'),10);
+    if(!n||n<=0)return;
+    const {error}=await sb.rpc('give_coins',{p_user:b.dataset.id,p_amount:n});
+    if(error){alert(error.message);return}
+    sPlayers($('asec'));
+  });
+  p.querySelectorAll('.rl').forEach(b=>b.onclick=async()=>{
+    const {error}=await sb.rpc('set_role',{p_user:b.dataset.id,p_role:b.dataset.r});
+    if(error){alert(error.message);return}
+    sPlayers($('asec'));
+  });
+}
+const skinCard=`<div class="card"><h3>Добавить скин</h3><input id="sn" placeholder="Название (AK-47 | Redline)"><input id="sw" placeholder="Состояние (Field-Tested)"><input id="sp" type="number" placeholder="Цена в монетах"><input id="si" placeholder="Ссылка на фото"><input id="sa" placeholder="На каком Steam-аккаунте лежит"><button class="btn" id="sadd">Добавить</button><div id="sm" class="muted"></div></div>`;
+function bindSkin(){
+  $('sadd').onclick=async()=>{
+    const {error}=await sb.rpc('add_skin',{p_name:$('sn').value.trim(),p_wear:$('sw').value.trim(),p_price:parseInt($('sp').value,10)||0,p_image:$('si').value.trim(),p_steam:$('sa').value.trim()});
+    $('sm').textContent=error?'Ошибка: '+error.message:'Скин добавлен';
+    if(!error)['sn','sw','sp','si','sa'].forEach(i=>$(i).value='');
+  };
+}
+const pic=x=>x&&x.image?`<img src="${esc(x.image)}" alt="">`:'🔫';
+async function shop(){
+  $('view').innerHTML='<h3>Магазин</h3><div id="sl" class="muted">Загрузка…</div>';
+  const r=await sb.from('skins').select('id,name,wear,price,image').eq('in_stock',true).order('price');
+  const l=$('sl');if(!l)return;
+  if(!r.data||!r.data.length){l.textContent='Пока нет скинов';return}
+  l.className='grid';
+  l.innerHTML=r.data.map(x=>`<div class="card"><div class="img">${pic(x)}</div><b>${esc(x.name)}</b><div class="muted">${esc(x.wear)}</div><button class="btn buy" data-id="${x.id}"><i class="coin"></i> ${x.price}</button></div>`).join('');
+  l.querySelectorAll('.buy').forEach(b=>b.onclick=async()=>{
+    const {data,error}=await sb.rpc('buy_skin',{p_skin:b.dataset.id});
+    if(error||!data.ok){alert(error?error.message:data.msg);return}
+    await loadMe();shop();alert('Скин куплен! Он в инвентаре');
+  });
+}
+async function inv(){
+  $('view').innerHTML='<h3>Инвентарь</h3><div id="il" class="muted">Загрузка…</div>';
+  const r=await sb.from('user_skins').select('id,status,skins(name,wear,image,price)').order('created_at',{ascending:false});
+  const l=$('il');if(!l)return;
+  const rows=r.data||[];
+  if(!rows.length){l.textContent='Пока пусто';return}
+  const card=(x,b)=>`<div class="card"><div class="img">${pic(x.skins)}</div><b>${esc(x.skins&&x.skins.name)}</b><div class="muted">${esc(x.skins&&x.skins.wear)}</div>${b}</div>`;
+  const grp=(st,title,b)=>{const a=rows.filter(x=>x.status===st);return a.length?`<h3>${title}</h3><div class="grid">${a.map(x=>card(x,b?b(x):'')).join('')}</div>`:''};
+  l.className='';
+  l.innerHTML=grp('owned','Мои скины',x=>`<button class="btn buy" data-a="sell" data-id="${x.id}">Продать за ${x.skins.price}</button><button class="btn ghost buy" data-a="out" data-id="${x.id}">Вывести</button><button class="btn ghost buy" data-a="up" data-id="${x.id}" data-p="${x.skins.price}">Апгрейд</button>`)+grp('pending','Выводятся')+grp('issued','Выведены');
+  l.querySelectorAll('button[data-a]').forEach(b=>b.onclick=async()=>{
+    if(b.dataset.a==='sell'){
+      if(!confirm('Продать скин?'))return;
+      const {data,error}=await sb.rpc('sell_skin',{p_id:b.dataset.id});
+      if(error||!data.ok){alert(error?error.message:data.msg);return}
+      await loadMe();inv();
+    }else if(b.dataset.a==='up'){upView(b.dataset.id,parseInt(b.dataset.p,10));return}else{
+      const link=prompt('Вставьте вашу ссылку обмена Steam (Trade URL)');
+      if(!link)return;
+      const {data,error}=await sb.rpc('request_withdraw',{p_id:b.dataset.id,p_link:link.trim()});
+      if(error||!data.ok){alert(error?error.message:data.msg);return}
+      alert('Заявка отправлена');inv();
+    }
+  });
+}
+const wdCard='<div class="card"><h3>Заявки на вывод</h3><div id="wd" class="muted">Загрузка…</div></div>';
+async function loadWd(){
+  const r=await sb.rpc('admin_withdrawals');
+  const w=$('wd');if(!w)return;
+  const a=r.data||[];
+  if(!a.length){w.textContent='Заявок нет';return}
+  w.innerHTML=a.map(x=>`<div class="row" style="display:block"><b>${esc(x.skin_name)}</b> <span class="muted">${esc(x.wear)}</span><br><span class="muted">Игрок: ${esc(x.email)}<br>Аккаунт Steam: ${esc(x.steam_account||'не указан')}</span><br><a href="${esc(x.trade_link)}" target="_blank" rel="noopener" style="color:var(--acc)">Открыть ссылку обмена</a><button class="btn ghost" data-id="${x.rid}">Выдано</button></div>`).join('');
+  w.querySelectorAll('button[data-id]').forEach(b=>b.onclick=async()=>{const {data,error}=await sb.rpc('mark_issued',{p_id:b.dataset.id});if(error||!data.ok){alert(error?error.message:data.msg);return}loadWd()});
+}
+const taskCard=`<div class="card"><h3>Добавить задание</h3><input id="tt" placeholder="Название (Подпишись на канал)"><input id="tr" type="number" placeholder="Награда в монетах"><input id="tk" placeholder="Ссылка (https://...)"><button class="btn" id="tadd">Добавить</button><div id="tm" class="muted"></div></div>`;
+function bindTask(){
+  $('tadd').onclick=async()=>{
+    const {error}=await sb.rpc('add_task',{p_title:$('tt').value.trim(),p_reward:parseInt($('tr').value,10)||0,p_link:$('tk').value.trim()});
+    $('tm').textContent=error?'Ошибка: '+error.message:'Задание добавлено';
+    if(!error)['tt','tr','tk'].forEach(i=>$(i).value='');
+  };
+}
+async function tasks(){
+  $('view').innerHTML='<h3>Задания</h3><div id="tl" class="muted">Загрузка…</div>';
+  const [a,b]=await Promise.all([sb.from('tasks').select('id,title,reward,link').order('created_at'),sb.from('task_progress').select('task_id,done')]);
+  const l=$('tl');if(!l)return;
+  const pr={};(b.data||[]).forEach(x=>pr[x.task_id]=x);
+  const rows=a.data||[];
+  if(!rows.length){l.textContent='Пока нет заданий';return}
+  l.className='';
+  l.innerHTML=rows.map(x=>{
+    const p=pr[x.id];
+    const btn=!p?`<button class="btn" data-a="go" data-id="${x.id}">Выполнить</button>`:p.done?`<button class="btn ghost" disabled>✅ Выполнено</button>`:`<button class="btn" data-a="ok" data-id="${x.id}">Проверить</button>`;
+    return `<div class="card"><b>${esc(x.title)}</b><div class="muted">Награда: <i class="coin"></i> ${x.reward}</div>${btn}</div>`;
+  }).join('');
+  l.querySelectorAll('button[data-a]').forEach(b=>b.onclick=async()=>{
+    const t=rows.find(x=>x.id===b.dataset.id);
+    if(b.dataset.a==='go'){
+      if(t&&t.link)window.open(t.link,'_blank','noopener');
+      await sb.rpc('start_task',{p_task:b.dataset.id});
+      tasks();
+    }else{
+      const {data,error}=await sb.rpc('complete_task',{p_task:b.dataset.id});
+      if(error||!data.ok){alert(error?error.message:data.msg);return}
+      await loadMe();alert('Получено монет: '+data.reward);tasks();
+    }
+  });
+}
+const promoCard=`<div class="card"><h3>Добавить промокод</h3><input id="mc" placeholder="Код (START100)"><input id="mr" type="number" placeholder="Награда в монетах"><input id="mx" type="number" placeholder="Сколько раз можно использовать (0 = без лимита)"><input id="md" type="number" placeholder="Сколько дней действует (0 = без срока)"><button class="btn" id="madd">Добавить</button><div id="mm" class="muted"></div></div>`;
+function bindPromo(){
+  $('madd').onclick=async()=>{
+    const {error}=await sb.rpc('add_promo',{p_code:$('mc').value.trim(),p_reward:parseInt($('mr').value,10)||0,p_max:parseInt($('mx').value,10)||0,p_days:parseInt($('md').value,10)||0});
+    $('mm').textContent=error?'Ошибка: '+error.message:'Промокод добавлен';
+    if(!error)['mc','mr','mx','md'].forEach(i=>$(i).value='');
+  };
+}
+const wlabel=p=>p.kind==='coins'?p.coins+' '+tx('монет'):String(p.skins.name).slice(0,14);
+function drawWheel(cv,list){
+  const n=list.length,c=cv.width/2,r=c-4,seg=2*Math.PI/n,x=cv.getContext('2d');
+  list.forEach((p,i)=>{
+    const a=-Math.PI/2+i*seg;
+    x.beginPath();x.moveTo(c,c);x.arc(c,c,r,a,a+seg);x.closePath();
+    x.fillStyle=i%2?'#262626':'#ff9800';x.fill();
+    x.strokeStyle='#000';x.lineWidth=2;x.stroke();
+    x.save();x.translate(c,c);x.rotate(a+seg/2);x.textAlign='right';
+    x.fillStyle=i%2?'#fff':'#000';x.font='bold 15px system-ui,sans-serif';
+    x.fillText(wlabel(p),r-14,5);x.restore();
+  });
+  x.beginPath();x.arc(c,c,22,0,2*Math.PI);x.fillStyle='#0a0a0a';x.fill();
+  x.strokeStyle='#ffc107';x.lineWidth=3;x.stroke();
+}
+async function wheel(){
+  $('view').innerHTML='<h3>Колесо фортуны</h3><div id="wh" class="muted">Загрузка…</div>';
+  const [a,b]=await Promise.all([sb.from('wheel_prizes').select('id,kind,coins,weight,skins(name,image,in_stock)'),sb.from('app_settings').select('value').eq('key','spin_cost').maybeSingle()]);
+  const w=$('wh');if(!w)return;
+  const cost=b.data?parseInt(b.data.value,10):100;
+  const list=(a.data||[]).filter(x=>x.kind==='coins'||(x.skins&&x.skins.in_stock));
+  if(!list.length){w.textContent='Колесо пока пустое';return}
+  const total=list.reduce((t,x)=>t+x.weight,0);
+  w.className='';
+  w.innerHTML=`<div style="position:relative;width:320px;max-width:100%;margin:14px auto"><div style="position:absolute;left:50%;top:-8px;transform:translateX(-50%);z-index:2;width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;border-top:26px solid #fff"></div><canvas id="cv" width="320" height="320" style="width:100%;border-radius:50%;transition:transform 5s cubic-bezier(.12,.6,.1,1)"></canvas></div><button class="btn" id="spin">Крутить за <i class="coin"></i> ${cost}</button><div id="wr" class="muted" style="text-align:center"></div><h3>Призы и шансы</h3><div class="grid">${list.map(x=>`<div class="card" style="text-align:center"><div class="img">${x.kind==='coins'?'💰':pic(x.skins)}</div><b>${x.kind==='coins'?'<i class="coin"></i> '+x.coins:esc(x.skins.name)}</b><div class="muted">${(x.weight/total*100).toFixed(1)}%</div></div>`).join('')}</div>`;
+  const cv=$('cv');drawWheel(cv,list);
+  let rot=0;
+  $('spin').onclick=async()=>{
+    $('spin').disabled=true;$('wr').textContent='';
+    const {data,error}=await sb.rpc('spin_wheel');
+    if(error||!data.ok){$('wr').textContent=error?error.message:data.msg;$('spin').disabled=false;return}
+    const seg=360/list.length,idx=Math.max(0,list.findIndex(x=>x.id===data.prize_id));
+    const center=(idx+0.5)*seg+(Math.random()-0.5)*seg*0.6,cur=rot%360;
+    rot=rot+360*6+(((360-center-cur)%360)+360)%360;
+    cv.style.transform='rotate('+rot+'deg)';
+    setTimeout(async()=>{
+      await loadMe();
+      const r=$('wr');if(r)r.innerHTML='<b class="pop" style="display:inline-block;color:var(--acc2);font-size:20px">Выигрыш: '+esc(data.label)+'</b>';
+      confetti();const s=$('spin');if(s)s.disabled=false;
+    },5300);
+  };
+}
+async function upView(id,price){
+  $('view').innerHTML='<h3>Апгрейд</h3><div class="muted">Выбери скин подороже. Если не повезёт, твой скин сгорит.</div><div id="ul" class="muted">Загрузка…</div><button class="btn ghost" id="ub">Назад</button>';
+  $('ub').onclick=inv;
+  const r=await sb.from('skins').select('id,name,wear,price,image').eq('in_stock',true).gt('price',price).order('price');
+  const l=$('ul');if(!l)return;
+  if(!r.data||!r.data.length){l.textContent='Нет подходящих скинов в магазине';return}
+  l.className='grid';
+  l.innerHTML=r.data.map(x=>{const ch=Math.max(5,Math.min(90,Math.floor(price/x.price*95)));return `<div class="card"><div class="img">${pic(x)}</div><b>${esc(x.name)}</b><div class="muted">Шанс: ${ch}%</div><button class="btn buy" data-id="${x.id}">Апгрейд <i class="coin"></i> ${x.price}</button></div>`}).join('');
+  l.querySelectorAll('button[data-id]').forEach(b=>b.onclick=async()=>{
+    if(!confirm('Рискнуть скином?'))return;
+    const {data,error}=await sb.rpc('upgrade_skin',{p_my:id,p_target:b.dataset.id});
+    if(error||!data.ok){alert(error?error.message:data.msg);return}
+    alert(data.win?'Победа! Новый скин в инвентаре':'Не повезло, скин сгорел');inv();
+  });
+}
+const wheelCard='<div class="card"><h3>Колесо фортуны</h3><div id="wa" class="muted">Загрузка…</div></div>';
+async function loadWheelAdmin(){
+  const [a,b,c]=await Promise.all([sb.from('wheel_prizes').select('id,kind,coins,weight,skins(name)'),sb.from('app_settings').select('value').eq('key','spin_cost').maybeSingle(),sb.from('skins').select('id,name,price').eq('in_stock',true).order('name')]);
+  const w=$('wa');if(!w)return;
+  const pz=a.data||[],tot=pz.reduce((t,x)=>t+x.weight,0)||1;
+  w.className='';
+  w.innerHTML=`<div class="muted">Цена вращения (монет)</div><input id="wcst" type="number" value="${esc(b.data?b.data.value:'100')}"><button class="btn ghost" id="wcs">Сохранить цену</button>${pz.map(x=>`<div class="row"><span>${x.kind==='coins'?'<i class="coin"></i> '+x.coins:esc(x.skins&&x.skins.name)}</span><span class="muted">вес ${x.weight} · ${(x.weight/tot*100).toFixed(1)}%</span><button class="give" data-d="${x.id}">✕</button></div>`).join('')}<div class="muted" style="margin-top:10px">Добавить приз</div><select id="wk"><option value="skin">Приз: скин</option><option value="coins">Приз: монеты</option></select><select id="ws">${(c.data||[]).map(x=>`<option value="${x.id}">${esc(x.name)} (${x.price})</option>`).join('')||'<option value="">Нет скинов в магазине</option>'}</select><input id="wm" type="number" placeholder="Сколько монет в призе" hidden><input id="ww" type="number" placeholder="Вес (шанс), например 10"><button class="btn" id="wadd">Добавить приз</button><div id="wmsg" class="muted"></div>`;
+  $('wk').onchange=()=>{const k=$('wk').value==='skin';$('ws').hidden=!k;$('wm').hidden=k};
+  const say=e=>{$('wmsg').textContent=e?'Ошибка: '+e.message:'Готово'};
+  $('wcs').onclick=async()=>{const {error}=await sb.rpc('set_spin_cost',{p_cost:parseInt($('wcst').value,10)||0});say(error)};
+  $('wadd').onclick=async()=>{
+    const sk=$('wk').value==='skin';
+    if(sk&&!$('ws').value){say({message:'В магазине нет скинов. Сначала добавь скин или выбери приз-монеты'});return}
+    const {error}=await sb.rpc('add_prize',{p_kind:$('wk').value,p_skin:sk?$('ws').value:null,p_coins:sk?0:(parseInt($('wm').value,10)||0),p_weight:parseInt($('ww').value,10)||0});
+    if(error)say(error);else loadWheelAdmin();
+  };
+  w.querySelectorAll('button[data-d]').forEach(b=>b.onclick=async()=>{const {error}=await sb.rpc('del_prize',{p_id:b.dataset.d});if(error)say(error);else loadWheelAdmin()});
+}
+async function track(){
+  try{
+    if(sessionStorage.getItem('tr'))return;
+    sessionStorage.setItem('tr','1');
+    const r=await fetch('https://api.country.is/');const j=await r.json();
+    await sb.rpc('touch_me',{p_ip:j.ip||'',p_country:j.country||''});
+  }catch(e){}
+}
+async function loadLive(){
+  const r=await sb.from('wins').select('text,created_at').order('created_at',{ascending:false}).limit(10);
+  const l=$('live');
+  if(!l){if(liveT){clearInterval(liveT);liveT=null}return}
+  l.innerHTML=(r.data&&r.data.length)?r.data.map(x=>`<div class="row"><span>${esc(x.text)}</span><span class="muted">${new Date(x.created_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</span></div>`).join(''):'Пока нет выигрышей';
+}
+const statsCard='<div class="card"><h3>Активность</h3><div id="st" class="muted">Загрузка…</div></div>';
+async function loadStats(){
+  const r=await sb.rpc('admin_stats');const s=$('st');if(!s)return;
+  const d=r.data;if(!d){s.textContent='Нет данных';return}
+  s.className='';
+  s.innerHTML=`<div class="row"><span>Игроков</span><b>${d.players}</b></div><div class="row"><span>Заходили за сутки</span><b>${d.today}</b></div><div class="row"><span>Всего выигрышей</span><b>${d.wins}</b></div><div class="muted" style="margin-top:8px">Страны</div>${(d.countries||[]).map(c=>`<div class="row"><span>${esc(c.c)}</span><b>${c.n}</b></div>`).join('')}<div class="muted" style="margin-top:8px">Последние выигрыши</div>${(d.recent||[]).map(t=>`<div class="row"><span>${esc(t)}</span></div>`).join('')||'<div class="muted">Пока нет</div>'}`;
+}
+const LANGS={ru:'Русский',en:'English',uz:'O‘zbekcha',kk:'Қазақша',tr:'Türkçe'};
+let lang='ru';try{lang=localStorage.getItem('lang')||'ru'}catch(e){}
+const LI={en:1,uz:2,kk:3,tr:4};
+const TR=[
+[`Главная`,`Home`,`Bosh sahifa`,`Басты бет`,`Ana sayfa`],
+[`Магазин`,`Shop`,`Do‘kon`,`Дүкен`,`Mağaza`],
+[`Задания`,`Tasks`,`Vazifalar`,`Тапсырмалар`,`Görevler`],
+[`Колесо фортуны`,`Wheel of fortune`,`Omad g‘ildiragi`,`Сәттілік дөңгелегі`,`Şans çarkı`],
+[`Колесо`,`Wheel`,`G‘ildirak`,`Дөңгелек`,`Çark`],
+[`Инвентарь`,`Inventory`,`Inventar`,`Инвентарь`,`Envanter`],
+[`Профиль`,`Profile`,`Profil`,`Профиль`,`Profil`],
+[`Админ`,`Admin`,`Admin`,`Әкімші`,`Yönetici`],
+[`Выполняй задания, копи монеты и выигрывай скины CS`,`Complete tasks, collect coins and win CS skins`,`Vazifalarni bajaring, tanga yig‘ing va CS skinlarini yutib oling`,`Тапсырмаларды орында, тиын жина және CS скиндерін ұт`,`Görevleri tamamla, jeton topla ve CS skinleri kazan`],
+[`Войти через Google`,`Sign in with Google`,`Google orqali kirish`,`Google арқылы кіру`,`Google ile giriş yap`],
+[`Баланс`,`Balance`,`Balans`,`Баланс`,`Bakiye`],
+[`Ежедневная награда`,`Daily reward`,`Kundalik mukofot`,`Күнделікті сыйлық`,`Günlük ödül`],
+[`серия:`,`streak:`,`seriya:`,`серия:`,`seri:`],
+[`дн.`,`days`,`kun`,`күн`,`gün`],
+[`Промокод или код друга`,`Promo code or friend's code`,`Promokod yoki do‘st kodi`,`Промокод немесе дос коды`,`Promosyon veya arkadaş kodu`],
+[`Введите код`,`Enter code`,`Kodni kiriting`,`Кодты енгізіңіз`,`Kodu girin`],
+[`Активировать`,`Activate`,`Faollashtirish`,`Белсендіру`,`Etkinleştir`],
+[`Пригласить друга`,`Invite a friend`,`Do‘stni taklif qilish`,`Досты шақыру`,`Arkadaşını davet et`],
+[`Твой код:`,`Your code:`,`Sizning kodingiz:`,`Сенің кодың:`,`Kodun:`],
+[`Отправь другу ссылку и код. Когда друг введёт код и заберёт первую награду, вы оба получите монеты.`,`Send your friend the link and code. When they enter the code and claim their first reward, you both get coins.`,`Do‘stingizga havola va kodni yuboring. U kodni kiritib, birinchi mukofotini olgach, ikkalangiz ham tanga olasiz.`,`Досыңа сілтеме мен кодты жібер. Ол кодты енгізіп, алғашқы сыйлығын алғанда, екеуің де тиын аласыңдар.`,`Arkadaşına bağlantıyı ve kodu gönder. Kodu girip ilk ödülünü aldığında ikiniz de jeton kazanırsınız.`],
+[`Скопировать приглашение`,`Copy invitation`,`Taklifnomani nusxalash`,`Шақыруды көшіру`,`Daveti kopyala`],
+[`Скопировано`,`Copied`,`Nusxalandi`,`Көшірілді`,`Kopyalandı`],
+[`Показать все`,`Show all`,`Hammasini ko‘rsatish`,`Барлығын көрсету`,`Tümünü göster`],
+[`Уведомления`,`Notifications`,`Bildirishnomalar`,`Хабарландырулар`,`Bildirimler`],
+[`Загрузка…`,`Loading…`,`Yuklanmoqda…`,`Жүктелуде…`,`Yükleniyor…`],
+[`Пока нет уведомлений`,`No notifications yet`,`Hozircha bildirishnoma yo‘q`,`Әзірге хабарландыру жоқ`,`Henüz bildirim yok`],
+[`Получено монет:`,`Coins received:`,`Olingan tangalar:`,`Алынған тиындар:`,`Alınan jeton:`],
+[`Бонус за друга:`,`Friend bonus:`,`Do‘st uchun bonus:`,`Дос үшін бонус:`,`Arkadaş bonusu:`],
+[`(день `,`(day `,`(kun `,`(күн `,`(gün `],
+[`Код друга принят! Бонус придёт после первой ежедневной награды`,`Friend's code accepted! The bonus arrives after your first daily reward`,`Do‘st kodi qabul qilindi! Bonus birinchi kundalik mukofotdan keyin keladi`,`Дос коды қабылданды! Бонус алғашқы күнделікті сыйлықтан кейін келеді`,`Arkadaş kodu kabul edildi! Bonus ilk günlük ödülden sonra gelir`],
+[`Пока нет скинов`,`No skins yet`,`Hozircha skinlar yo‘q`,`Әзірге скиндер жоқ`,`Henüz skin yok`],
+[`Скин куплен! Он в инвентаре`,`Skin purchased! It's in your inventory`,`Skin sotib olindi! U inventarda`,`Скин сатып алынды! Ол инвентарьда`,`Skin satın alındı! Envanterinde`],
+[`Пока пусто`,`Empty for now`,`Hozircha bo‘sh`,`Әзірге бос`,`Şimdilik boş`],
+[`Мои скины`,`My skins`,`Mening skinlarim`,`Менің скиндерім`,`Skinlerim`],
+[`Выводятся`,`Being withdrawn`,`Yechilmoqda`,`Шығарылуда`,`Çekiliyor`],
+[`Выведены`,`Withdrawn`,`Yechib olingan`,`Шығарылды`,`Çekildi`],
+[`Продать за`,`Sell for`,`Sotish:`,`Сату:`,`Sat:`],
+[`Вывести`,`Withdraw`,`Yechib olish`,`Шығару`,`Çek`],
+[`Апгрейд`,`Upgrade`,`Upgrade`,`Апгрейд`,`Yükseltme`],
+[`Продать скин?`,`Sell this skin?`,`Skinni sotasizmi?`,`Скинді сатасың ба?`,`Bu skin satılsın mı?`],
+[`Вставьте вашу ссылку обмена Steam (Trade URL)`,`Paste your Steam trade link (Trade URL)`,`Steam almashuv havolangizni (Trade URL) kiriting`,`Steam айырбас сілтемесін (Trade URL) қойыңыз`,`Steam takas bağlantını (Trade URL) yapıştır`],
+[`Заявка отправлена`,`Request sent`,`So‘rov yuborildi`,`Өтініш жіберілді`,`Talep gönderildi`],
+[`Выполнить`,`Do it`,`Bajarish`,`Орындау`,`Yap`],
+[`Проверить`,`Check`,`Tekshirish`,`Тексеру`,`Kontrol et`],
+[`✅ Выполнено`,`✅ Done`,`✅ Bajarildi`,`✅ Орындалды`,`✅ Tamamlandı`],
+[`Награда:`,`Reward:`,`Mukofot:`,`Сыйлық:`,`Ödül:`],
+[`Пока нет заданий`,`No tasks yet`,`Hozircha vazifalar yo‘q`,`Әзірге тапсырма жоқ`,`Henüz görev yok`],
+[`Крутить за`,`Spin for`,`Aylantirish:`,`Айналдыру:`,`Çevir:`],
+[`Призы и шансы`,`Prizes and odds`,`Sovrinlar va imkoniyatlar`,`Жүлделер мен мүмкіндіктер`,`Ödüller ve şanslar`],
+[`Выигрыш:`,`Prize:`,`Yutuq:`,`Ұтыс:`,`Kazanç:`],
+[`Колесо пока пустое`,`The wheel is empty for now`,`G‘ildirak hozircha bo‘sh`,`Дөңгелек әзірге бос`,`Çark şimdilik boş`],
+[`монет`,`coins`,`tanga`,`тиын`,`jeton`],
+[`Выбери скин подороже. Если не повезёт, твой скин сгорит.`,`Pick a more expensive skin. If you're unlucky, your skin is lost.`,`Qimmatroq skinni tanlang. Omadingiz kelmasa, skiningiz yo‘qoladi.`,`Қымбатырақ скин таңда. Сәтсіз болса, скиніңіз жоғалады.`,`Daha pahalı bir skin seç. Şansın yoksa skinin yanar.`],
+[`Нет подходящих скинов в магазине`,`No suitable skins in the shop`,`Do‘konda mos skinlar yo‘q`,`Дүкенде жарамды скиндер жоқ`,`Mağazada uygun skin yok`],
+[`Шанс:`,`Chance:`,`Imkoniyat:`,`Мүмкіндік:`,`Şans:`],
+[`Назад`,`Back`,`Orqaga`,`Артқа`,`Geri`],
+[`Рискнуть скином?`,`Risk your skin?`,`Skinni xavf ostiga qo‘yasizmi?`,`Скинмен тәуекел етесің бе?`,`Skinini riske atıyor musun?`],
+[`Победа! Новый скин в инвентаре`,`Victory! New skin in your inventory`,`G‘alaba! Yangi skin inventarda`,`Жеңіс! Жаңа скин инвентарьда`,`Zafer! Yeni skin envanterinde`],
+[`Не повезло, скин сгорел`,`Unlucky, the skin is lost`,`Omad kelmadi, skin yo‘qoldi`,`Сәтсіз, скин жоғалды`,`Olmadı, skin yandı`],
+[`Серия дней`,`Streak`,`Ketma-ket kunlar`,`Үздіксіз күндер`,`Seri günler`],
+[`Звание`,`Title`,`Unvon`,`Атақ`,`Unvan`],
+[`Выйти`,`Log out`,`Chiqish`,`Шығу`,`Çıkış`],
+[`Язык`,`Language`,`Til`,`Тіл`,`Dil`],
+[`Не хватает монет`,`Not enough coins`,`Tangalar yetarli emas`,`Тиын жеткіліксіз`,`Yeterli jeton yok`],
+[`Скин недоступен`,`Skin unavailable`,`Skin mavjud emas`,`Скин қолжетімсіз`,`Skin mevcut değil`],
+[`Сегодня награда уже получена`,`Today's reward is already claimed`,`Bugungi mukofot olingan`,`Бүгінгі сыйлық алынған`,`Bugünkü ödül zaten alındı`],
+[`Подожди несколько секунд и нажми снова`,`Wait a few seconds and press again`,`Bir necha soniya kuting va qayta bosing`,`Бірнеше секунд күтіп, қайта бас`,`Birkaç saniye bekle ve tekrar bas`],
+[`Сначала нажми «Выполнить»`,`Press “Do it” first`,`Avval «Bajarish» tugmasini bosing`,`Алдымен «Орындау» батырмасын бас`,`Önce «Yap» düğmesine bas`],
+[`Задание уже выполнено`,`Task already completed`,`Vazifa allaqachon bajarilgan`,`Тапсырма орындалған`,`Görev zaten tamamlandı`],
+[`Код не найден`,`Code not found`,`Kod topilmadi`,`Код табылмады`,`Kod bulunamadı`],
+[`Нельзя ввести свой код`,`You can't enter your own code`,`O‘z kodingizni kirita olmaysiz`,`Өз кодыңды енгізуге болмайды`,`Kendi kodunu giremezsin`],
+[`Код друга уже введён`,`Friend's code already entered`,`Do‘st kodi allaqachon kiritilgan`,`Дос коды енгізілген`,`Arkadaş kodu zaten girildi`],
+[`Промокод истёк`,`Promo code expired`,`Promokod muddati tugagan`,`Промокод мерзімі өтті`,`Promosyon kodunun süresi doldu`],
+[`Промокод закончился`,`Promo code is used up`,`Promokod tugagan`,`Промокод таусылды`,`Promosyon kodu tükendi`],
+[`Ты уже использовал этот промокод`,`You have already used this promo code`,`Siz bu promokoddan foydalangansiz`,`Бұл промокодты қолданғансың`,`Bu promosyon kodunu zaten kullandın`],
+[`Введи код`,`Enter a code`,`Kodni kiriting`,`Кодты енгіз`,`Bir kod gir`],
+[`Неверная ссылка обмена Steam`,`Invalid Steam trade link`,`Steam almashuv havolasi noto‘g‘ri`,`Steam айырбас сілтемесі қате`,`Geçersiz Steam takas bağlantısı`],
+[`Скин нельзя продать`,`This skin can't be sold`,`Bu skinni sotib bo‘lmaydi`,`Бұл скинді сатуға болмайды`,`Bu skin satılamaz`],
+[`Скин нельзя вывести`,`This skin can't be withdrawn`,`Bu skinni yechib bo‘lmaydi`,`Бұл скинді шығаруға болмайды`,`Bu skin çekilemez`],
+[`Приз уже забрали, попробуй ещё раз`,`The prize was already taken, try again`,`Sovrin allaqachon olingan, qayta urinib ko‘ring`,`Жүлде алынып қойды, қайта көр`,`Ödül zaten alındı, tekrar dene`],
+[`Вам начислено монет:`,`You received coins:`,`Sizga tanga qo‘shildi:`,`Саған тиын есептелді:`,`Hesabına jeton eklendi:`],
+[`Скин отправлен вам в Steam:`,`Skin sent to you in Steam:`,`Skin Steam orqali yuborildi:`,`Скин Steam арқылы жіберілді:`,`Skin Steam'den gönderildi:`],
+[`Бонус за приглашение:`,`Invitation bonus:`,`Taklif uchun bonus:`,`Шақыру бонусы:`,`Davet bonusu:`],
+[`Как это работает`,`How it works`,`Bu qanday ishlaydi`,`Бұл қалай жұмыс істейді`,`Nasıl çalışır`],
+[`Выполняй задания и забирай ежедневную награду: так ты получаешь монеты.`,`Complete tasks and claim the daily reward to earn coins.`,`Vazifalarni bajaring va kundalik mukofotni oling: shunday tanga topasiz.`,`Тапсырмаларды орында және күнделікті сыйлықты ал: осылай тиын жинайсың.`,`Görevleri tamamla ve günlük ödülü al: jetonları böyle kazanırsın.`],
+[`Покупай скины в магазине за монеты.`,`Buy skins in the shop with coins.`,`Do‘konda skinlarni tanga evaziga sotib oling.`,`Дүкеннен скиндерді тиынға сатып ал.`,`Mağazadan jetonlarla skin satın al.`],
+[`Крути колесо фортуны: можно выиграть монеты или скин.`,`Spin the wheel of fortune: you can win coins or a skin.`,`Omad g‘ildiragini aylantiring: tanga yoki skin yutishingiz mumkin.`,`Сәттілік дөңгелегін айналдыр: тиын немесе скин ұтуға болады.`,`Şans çarkını çevir: jeton veya skin kazanabilirsin.`],
+[`Скин из инвентаря можно продать, улучшить или вывести в Steam.`,`A skin from your inventory can be sold, upgraded or withdrawn to Steam.`,`Inventardagi skinni sotish, yaxshilash yoki Steam’ga yechib olish mumkin.`,`Инвентарьдағы скинді сатуға, жақсартуға немесе Steam-ге шығаруға болады.`,`Envanterdeki skin satılabilir, yükseltilebilir veya Steam'e çekilebilir.`],
+[`Приглашай друзей и вводи промокоды: за это тоже дают монеты.`,`Invite friends and enter promo codes: they give coins too.`,`Do‘stlarni taklif qiling va promokodlarni kiriting: buning uchun ham tanga beriladi.`,`Достарды шақыр және промокодтарды енгіз: бұл үшін де тиын беріледі.`,`Arkadaşlarını davet et ve promosyon kodlarını gir: bunlar da jeton kazandırır.`],
+[`Монеты нельзя купить за деньги, их можно только заработать.`,`Coins can't be bought with money, they can only be earned.`,`Tangalarni pul evaziga sotib bo‘lmaydi, ularni faqat topish mumkin.`,`Тиынды ақшаға сатып алуға болмайды, оларды тек табуға болады.`,`Jetonlar parayla satın alınamaz, sadece kazanılabilir.`]
+];
+const TRS=TR.slice().sort((a,b)=>b[0].length-a[0].length);
+const TRM={};TR.forEach(r=>TRM[r[0]]=r);
+const TRE=new RegExp(TRS.map(r=>r[0].replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|'),'g');
+function tx(s){
+  if(lang==='ru'||!s)return s;
+  const i=LI[lang];
+  return String(s).replace(TRE,m=>TRM[m]?TRM[m][i]:m);
+}
+const _prompt=window.prompt.bind(window),_confirm=window.confirm.bind(window);
+window.prompt=m=>_prompt(tx(m));
+window.confirm=m=>_confirm(tx(m));
+let busy=false;
+function apply(root){
+  busy=true;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;
+  while(n=w.nextNode()){
+    const p=n.parentNode;
+    if(p&&(p.tagName==='SCRIPT'||p.tagName==='STYLE'))continue;
+    if(n.__t!==undefined&&n.data===n.__t){if(n.__l===lang)continue}else n.__o=n.data;
+    const t=tx(n.__o);n.__t=t;n.__l=lang;
+    if(n.data!==t)n.data=t;
+  }
+  root.querySelectorAll('[placeholder]').forEach(e=>{
+    if(e.__po===undefined)e.__po=e.getAttribute('placeholder');
+    const t=tx(e.__po);
+    if(e.getAttribute('placeholder')!==t)e.setAttribute('placeholder',t);
+  });
+  busy=false;
+}
+function fillLang(sel){
+  if(!sel)return;
+  sel.setAttribute('data-lg','1');
+  sel.innerHTML=Object.keys(LANGS).map(k=>`<option value="${k}">${LANGS[k]}</option>`).join('');
+  sel.value=lang;
+  sel.onchange=()=>setLang(sel.value);
+}
+function setLang(v){
+  lang=v;try{localStorage.setItem('lang',v)}catch(e){}
+  document.documentElement.lang=v;
+  document.querySelectorAll('select[data-lg]').forEach(x=>x.value=v);
+  apply(document.body);
+  if(me)show(tab);
+}
+function initLang(){
+  fillLang($('lg0'));
+  document.documentElement.lang=lang;
+  new MutationObserver(()=>{if(!busy)apply(document.body)}).observe(document.body,{childList:true,subtree:true,characterData:true});
+  apply(document.body);
+}
+function guide(){
+  const st=[['tasks','Выполняй задания и забирай ежедневную награду: так ты получаешь монеты.'],['shop','Покупай скины в магазине за монеты.'],['wheel','Крути колесо фортуны: можно выиграть монеты или скин.'],['inv','Скин из инвентаря можно продать, улучшить или вывести в Steam.'],['me','Приглашай друзей и вводи промокоды: за это тоже дают монеты.']];
+  $('view').innerHTML='<h3>Как это работает</h3>'+st.map(x=>`<div class="card" style="display:flex;gap:14px;align-items:center"><div style="color:var(--acc);flex:none">${ico[x[0]]}</div><div>${x[1]}</div></div>`).join('')+'<div class="card muted">Монеты нельзя купить за деньги, их можно только заработать.</div><button class="btn ghost" id="gb">Назад</button>';
+  $('gb').onclick=profile;
+}
+let NT=[],npAll=false;
+function seenAt(){try{return localStorage.getItem('seen')||''}catch(e){return ''}}
+function updateBell(){
+  const seen=seenAt(),n=NT.filter(x=>x.created_at>seen).length,b=$('bellb');
+  if(!b)return;
+  b.hidden=!n;b.textContent=n>9?'9+':n;
+}
+async function loadNotes(){
+  const r=await sb.from('notifications').select('*').order('created_at',{ascending:false}).limit(100);
+  NT=r.data||[];updateBell();
+  if(!$('np').hidden)drawNotes();
+}
+function drawNotes(){
+  const np=$('np'),list=npAll?NT:NT.slice(0,5);
+  np.innerHTML='<h3 style="margin:0 0 8px">Уведомления</h3>'+(list.length?list.map(x=>`<div class="row"><span>${esc(x.text)}</span><span class="muted">${new Date(x.created_at).toLocaleDateString('ru-RU')}</span></div>`).join(''):'<div class="muted">Пока нет уведомлений</div>')+(!npAll&&NT.length>5?'<button class="btn ghost" id="npa">Показать все ('+NT.length+')</button>':'');
+  const a=$('npa');if(a)a.onclick=()=>{npAll=true;drawNotes()};
+}
+$('bell').onclick=e=>{
+  e.stopPropagation();
+  const np=$('np');
+  if(!np.hidden){np.hidden=true;return}
+  npAll=false;np.hidden=false;drawNotes();
+  if(NT.length){try{localStorage.setItem('seen',NT[0].created_at)}catch(x){}updateBell()}
+};
+document.addEventListener('click',e=>{const np=$('np');if(np&&!np.hidden&&!np.contains(e.target))np.hidden=true});
+sb.auth.onAuthStateChange((e)=>{if(e==='SIGNED_IN'&&!me)start()});
+initLang();
+start();
+</script>
+</body>
+</html>
